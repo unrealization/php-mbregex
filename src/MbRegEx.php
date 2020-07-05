@@ -2,20 +2,20 @@
 declare(strict_types=1);
 /**
  * @package PHPClassCollection
- * @subpackage MbRegex
+ * @subpackage MbRegEx
  * @link http://php-classes.sourceforge.net/ PHP Class Collection
  * @author Dennis Wronka <reptiler@users.sourceforge.net>
  */
 namespace unrealization\PHPClassCollection;
 /**
  * @package PHPClassCollection
- * @subpackage MbRegex
+ * @subpackage MbRegEx
  * @link http://php-classes.sourceforge.net/ PHP Class Collection
  * @author Dennis Wronka <reptiler@users.sourceforge.net>
- * @version 0.0.1
+ * @version 0.0.2
  * @license http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html LGPL 2.1
  */
-class MbRegex
+class MbRegEx
 {
 	public static function search(string $regex, string $content, string $options = ''): ?int
 	{
