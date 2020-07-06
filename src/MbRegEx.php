@@ -12,7 +12,7 @@ namespace unrealization\PHPClassCollection;
  * @subpackage MbRegEx
  * @link http://php-classes.sourceforge.net/ PHP Class Collection
  * @author Dennis Wronka <reptiler@users.sourceforge.net>
- * @version 0.1.0
+ * @version 0.2.0
  * @license http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html LGPL 2.1
  */
 class MbRegEx
@@ -26,11 +26,14 @@ class MbRegEx
 	 */
 	public static function search(string $regEx, string $content, string $options = ''): ?int
 	{
+		$oldEncoding = mb_regex_encoding();
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
+		$found = mb_ereg_search($regEx, $options);
+		mb_regex_encoding($oldEncoding);
 
-		if (!mb_ereg_search($regEx, $options))
+		if (!$found)
 		{
 			return null;
 		}
@@ -47,6 +50,7 @@ class MbRegEx
 	 */
 	public static function searchAll(string $regEx, string $content, string $options = ''): array
 	{
+		$oldEncoding = mb_regex_encoding();
 		$matches = array();
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
@@ -57,6 +61,7 @@ class MbRegEx
 			$matches[] = mb_ereg_search_getpos();
 		}
 
+		mb_regex_encoding($oldEncoding);
 		return $matches;
 	}
 
@@ -69,11 +74,14 @@ class MbRegEx
 	 */
 	public static function match(string $regEx, string $content, string $options = ''): ?array
 	{
+		$oldEncoding = mb_regex_encoding();
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
+		$found = mb_ereg_search($regEx, $options);
+		mb_regex_encoding($oldEncoding);
 
-		if (!mb_ereg_search($regEx, $options))
+		if (!$found)
 		{
 			return null;
 		}
@@ -90,6 +98,7 @@ class MbRegEx
 	 */
 	public static function matchAll(string $regEx, string $content, string $options = ''): array
 	{
+		$oldEncoding = mb_regex_encoding();
 		$matches = array();
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
@@ -100,7 +109,32 @@ class MbRegEx
 			$matches[] = mb_ereg_search_getregs();
 		}
 
+		mb_regex_encoding($oldEncoding);
 		return $matches;
+	}
+
+	/**
+	 * Replace part of a string.
+	 * @param string $regEx
+	 * @param string $replacement
+	 * @param string $content
+	 * @param string $options
+	 * @return string|NULL
+	 */
+	public static function replace(string $regEx, string $replacement, string $content, string $options = ''): ?string
+	{
+		$oldEncoding = mb_regex_encoding();
+		$encoding = mb_detect_encoding($content, mb_list_encodings());
+		mb_regex_encoding($encoding);
+		$output = mb_ereg_replace($regEx, $replacement, $content, $options);
+		mb_regex_encoding($oldEncoding);
+
+		if ($output === false)
+		{
+			return null;
+		}
+
+		return $output;
 	}
 
 	/**
