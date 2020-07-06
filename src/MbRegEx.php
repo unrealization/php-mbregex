@@ -12,18 +12,25 @@ namespace unrealization\PHPClassCollection;
  * @subpackage MbRegEx
  * @link http://php-classes.sourceforge.net/ PHP Class Collection
  * @author Dennis Wronka <reptiler@users.sourceforge.net>
- * @version 0.0.2
+ * @version 0.1.0
  * @license http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html LGPL 2.1
  */
 class MbRegEx
 {
-	public static function search(string $regex, string $content, string $options = ''): ?int
+	/**
+	 * Get the position of the first match for the given regular expression.
+	 * @param string $regEx
+	 * @param string $content
+	 * @param string $options
+	 * @return int|NULL
+	 */
+	public static function search(string $regEx, string $content, string $options = ''): ?int
 	{
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
 
-		if (!mb_ereg_search($regex, $options))
+		if (!mb_ereg_search($regEx, $options))
 		{
 			return null;
 		}
@@ -31,14 +38,21 @@ class MbRegEx
 		return mb_ereg_search_getpos();
 	}
 
-	public static function searchAll(string $regex, string $content, string $options = ''): array
+	/**
+	 * Get the positions of all matches for the given regular expression.
+	 * @param string $regEx
+	 * @param string $content
+	 * @param string $options
+	 * @return array
+	 */
+	public static function searchAll(string $regEx, string $content, string $options = ''): array
 	{
 		$matches = array();
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
 
-		while (mb_ereg_search($regex, $options))
+		while (mb_ereg_search($regEx, $options))
 		{
 			$matches[] = mb_ereg_search_getpos();
 		}
@@ -46,13 +60,20 @@ class MbRegEx
 		return $matches;
 	}
 
-	public static function match(string $regex, string $content, string $options = ''): ?array
+	/**
+	 * Get the first match for the given regular expression.
+	 * @param string $regEx
+	 * @param string $content
+	 * @param string $options
+	 * @return array|NULL
+	 */
+	public static function match(string $regEx, string $content, string $options = ''): ?array
 	{
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
 
-		if (!mb_ereg_search($regex, $options))
+		if (!mb_ereg_search($regEx, $options))
 		{
 			return null;
 		}
@@ -60,18 +81,89 @@ class MbRegEx
 		return mb_ereg_search_getregs();
 	}
 
-	public static function matchAll(string $regex, string $content, string $options = ''): array
+	/**
+	 * Get all matches for the given regular expression.
+	 * @param string $regEx
+	 * @param string $content
+	 * @param string $options
+	 * @return array
+	 */
+	public static function matchAll(string $regEx, string $content, string $options = ''): array
 	{
 		$matches = array();
 		$encoding = mb_detect_encoding($content, mb_list_encodings());
 		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
 
-		while (mb_ereg_search($regex, $options))
+		while (mb_ereg_search($regEx, $options))
 		{
 			$matches[] = mb_ereg_search_getregs();
 		}
 
 		return $matches;
+	}
+
+	/**
+	 * Pad a string to a specific length.
+	 * @param string $input
+	 * @param int $padLength
+	 * @param string $padString
+	 * @param int $padType
+	 * @throws \Exception
+	 * @return string
+	 */
+	public static function padString(string $input, int $padLength, string $padString, int $padType = STR_PAD_RIGHT): string
+	{
+		$inputEncoding = mb_detect_encoding($input, mb_list_encodings());
+		$padStringEncoding = mb_detect_encoding($padString, mb_list_encodings());
+
+		if ($inputEncoding !== $padStringEncoding)
+		{
+			$padString = mb_convert_encoding($padString, $inputEncoding, $padStringEncoding);
+		}
+
+		switch ($padType)
+		{
+			case STR_PAD_RIGHT:
+			case STR_PAD_BOTH:
+				$padRight = true;
+				break;
+			case STR_PAD_LEFT:
+				$padRight = false;
+				break;
+			default:
+				throw new \Exception('Unknown pad type '.$padType);
+		}
+
+		$leftPadding = '';
+		$rightPadding = '';
+
+		while (mb_strlen($leftPadding.$input.$rightPadding) < $padLength)
+		{
+			if ($padLength - mb_strlen($leftPadding.$input.$rightPadding) < mb_strlen($padString))
+			{
+				$padding = mb_substr($padString, 0, $padLength - mb_strlen($leftPadding.$input.$rightPadding));
+			}
+			else
+			{
+				$padding = $padString;
+			}
+
+			if ($padRight)
+			{
+				$rightPadding .= $padding;
+			}
+			else
+			{
+				$leftPadding .= $padding;
+			}
+
+			if ($padType === STR_PAD_BOTH)
+			{
+				$padRight = !$padRight;
+			}
+		}
+
+		return $leftPadding.$input.$rightPadding;
 	}
 }
