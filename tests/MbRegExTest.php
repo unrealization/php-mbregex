@@ -1,10 +1,10 @@
 <?php
 use PHPUnit\Framework\TestCase;
-use unrealization\PHPClassCollection\MbRegEx;
+use unrealization\MbRegEx;
 
 /**
  * Test Case for MbRegEx
- * @covers unrealization\PHPClassCollection\MbRegEx
+ * @covers unrealization\MbRegEx
  */
 class MbRegExTest extends TestCase
 {
