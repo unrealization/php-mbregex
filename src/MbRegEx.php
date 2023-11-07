@@ -12,11 +12,16 @@ namespace unrealization;
  * @subpackage MbRegEx
  * @link http://php-classes.sourceforge.net/ PHP Class Collection
  * @author Dennis Wronka <reptiler@users.sourceforge.net>
- * @version 3.0.0
+ * @version 3.1.0
  * @license http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html LGPL 2.1
  */
 class MbRegEx
 {
+	private static ?string $oldContentEncoding = null;
+	private static ?string $oldRegExEncoding = null;
+	private static ?array $contentEncodings = null;
+	private static ?array $regExEncodings = null;
+
 	/**
 	 * Get the position of the first match for the given regular expression.
 	 * @param string $regEx
@@ -26,12 +31,14 @@ class MbRegEx
 	 */
 	public static function search(string $regEx, string $content, string $options = ''): ?int
 	{
-		$oldEncoding = mb_regex_encoding();
-		$encoding = mb_detect_encoding($content, mb_list_encodings());
-		mb_regex_encoding($encoding);
+		$contentEncoding = mb_detect_encoding($content, self::listContentEncodings());
+		$regExEncoding = mb_detect_encoding($regEx, self::listRegExEncodings());
+		self::setEncoding($contentEncoding, $regExEncoding);
+
 		mb_ereg_search_init($content);
 		$found = mb_ereg_search($regEx, $options);
-		mb_regex_encoding($oldEncoding);
+
+		self::restoreEncoding();
 
 		if (!$found)
 		{
@@ -50,10 +57,11 @@ class MbRegEx
 	 */
 	public static function searchAll(string $regEx, string $content, string $options = ''): array
 	{
-		$oldEncoding = mb_regex_encoding();
+		$contentEncoding = mb_detect_encoding($content, self::listContentEncodings());
+		$regExEncoding = mb_detect_encoding($regEx, self::listRegExEncodings());
+		self::setEncoding($contentEncoding, $regExEncoding);
+
 		$matches = array();
-		$encoding = mb_detect_encoding($content, mb_list_encodings());
-		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
 
 		while (mb_ereg_search($regEx, $options))
@@ -61,7 +69,7 @@ class MbRegEx
 			$matches[] = mb_ereg_search_getpos();
 		}
 
-		mb_regex_encoding($oldEncoding);
+		self::restoreEncoding();
 		return $matches;
 	}
 
@@ -74,12 +82,14 @@ class MbRegEx
 	 */
 	public static function match(string $regEx, string $content, string $options = ''): ?array
 	{
-		$oldEncoding = mb_regex_encoding();
-		$encoding = mb_detect_encoding($content, mb_list_encodings());
-		mb_regex_encoding($encoding);
+		$contentEncoding = mb_detect_encoding($content, self::listContentEncodings());
+		$regExEncoding = mb_detect_encoding($regEx, self::listRegExEncodings());
+		self::setEncoding($contentEncoding, $regExEncoding);
+
 		mb_ereg_search_init($content);
 		$found = mb_ereg_search($regEx, $options);
-		mb_regex_encoding($oldEncoding);
+
+		self::restoreEncoding();
 
 		if (!$found)
 		{
@@ -98,10 +108,11 @@ class MbRegEx
 	 */
 	public static function matchAll(string $regEx, string $content, string $options = ''): array
 	{
-		$oldEncoding = mb_regex_encoding();
+		$contentEncoding = mb_detect_encoding($content, self::listContentEncodings());
+		$regExEncoding = mb_detect_encoding($regEx, self::listRegExEncodings());
+		self::setEncoding($contentEncoding, $regExEncoding);
+
 		$matches = array();
-		$encoding = mb_detect_encoding($content, mb_list_encodings());
-		mb_regex_encoding($encoding);
 		mb_ereg_search_init($content);
 
 		while (mb_ereg_search($regEx, $options))
@@ -109,7 +120,7 @@ class MbRegEx
 			$matches[] = mb_ereg_search_getregs();
 		}
 
-		mb_regex_encoding($oldEncoding);
+		self::restoreEncoding();
 		return $matches;
 	}
 
@@ -123,11 +134,13 @@ class MbRegEx
 	 */
 	public static function replace(string $regEx, string $replacement, string $content, string $options = ''): ?string
 	{
-		$oldEncoding = mb_regex_encoding();
-		$encoding = mb_detect_encoding($content, mb_list_encodings());
-		mb_regex_encoding($encoding);
+		$contentEncoding = mb_detect_encoding($content, self::listContentEncodings());
+		$regExEncoding = mb_detect_encoding($regEx, self::listRegExEncodings());
+		self::setEncoding($contentEncoding, $regExEncoding);
+
 		$output = mb_ereg_replace($regEx, $replacement, $content, $options);
-		mb_regex_encoding($oldEncoding);
+
+		self::restoreEncoding();
 
 		if ($output === false)
 		{
@@ -199,5 +212,72 @@ class MbRegEx
 		}
 
 		return $leftPadding.$input.$rightPadding;
+	}
+
+	private static function setEncoding(?string $contentEncoding = null, ?string $regExEncoding = null): void
+	{
+		if (!is_null($contentEncoding))
+		{
+			self::$oldContentEncoding = mb_internal_encoding();
+			mb_internal_encoding($contentEncoding);
+		}
+
+		if (!is_null($regExEncoding))
+		{
+			self::$oldRegExEncoding = mb_regex_encoding();
+			mb_regex_encoding($regExEncoding);
+		}
+	}
+
+	private static function restoreEncoding(): void
+	{
+		if (!is_null(self::$oldContentEncoding))
+		{
+			mb_internal_encoding(self::$oldContentEncoding);
+			self::$oldContentEncoding = null;
+		}
+
+		if (!is_null(self::$oldRegExEncoding))
+		{
+			mb_regex_encoding(self::$oldRegExEncoding);
+			self::$oldRegExEncoding = null;
+		}
+	}
+
+	private static function listContentEncodings(): array
+	{
+		if (is_null(self::$contentEncodings))
+		{
+			self::$contentEncodings = mb_list_encodings();
+		}
+
+		return self::$contentEncodings;
+	}
+
+	private static function listRegExEncodings(): array
+	{
+		if (is_null(self::$regExEncodings))
+		{
+			$oldEncoding = mb_regex_encoding();
+			self::$regExEncodings = array();
+
+			foreach (mb_list_encodings() as $encoding)
+			{
+				try
+				{
+					mb_regex_encoding($encoding);
+				}
+				catch (\Error $e)
+				{
+					continue;
+				}
+
+				self::$regExEncodings[] = $encoding;
+			}
+
+			mb_regex_encoding($oldEncoding);
+		}
+
+		return self::$regExEncodings;
 	}
 }
