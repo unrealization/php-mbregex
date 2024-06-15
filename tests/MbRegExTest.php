@@ -203,7 +203,7 @@ class MbRegExTest extends TestCase
 	{
 		$match = MbRegEx::search('[\d]', 'Test1Test2Test3');
 		$this->assertIsInt($match);
-		$this->assertSame(5, $match);
+		$this->assertSame(4, $match);
 
 		$match = MbRegEx::search('[\d]{2}', 'Test1Test2Test3');
 		$this->assertNull($match);
@@ -215,11 +215,11 @@ class MbRegExTest extends TestCase
 		$this->assertIsArray($matches);
 		$this->assertSame(3, count($matches));
 		$this->assertIsInt($matches[0]);
-		$this->assertSame(5, $matches[0]);
+		$this->assertSame(4, $matches[0]);
 		$this->assertIsInt($matches[1]);
-		$this->assertSame(10, $matches[1]);
+		$this->assertSame(9, $matches[1]);
 		$this->assertIsInt($matches[2]);
-		$this->assertSame(15, $matches[2]);
+		$this->assertSame(14, $matches[2]);
 
 		$matches = MbRegEx::searchAll('[\d]{2}', 'Test1Test2Test3');
 		$this->assertIsArray($matches);

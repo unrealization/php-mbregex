@@ -36,16 +36,16 @@ class MbRegEx
 		self::setEncoding($contentEncoding, $regExEncoding);
 
 		mb_ereg_search_init($content);
-		$found = mb_ereg_search($regEx, $options);
+		$info = mb_ereg_search_pos($regEx, $options);
 
 		self::restoreEncoding();
 
-		if (!$found)
+		if ($info === false)
 		{
 			return null;
 		}
 
-		return mb_ereg_search_getpos();
+		return $info[0];
 	}
 
 	/**
@@ -64,9 +64,9 @@ class MbRegEx
 		$matches = array();
 		mb_ereg_search_init($content);
 
-		while (mb_ereg_search($regEx, $options))
+		while (($info = mb_ereg_search_pos($regEx, $options)) !== false)
 		{
-			$matches[] = mb_ereg_search_getpos();
+			$matches[] = $info[0];
 		}
 
 		self::restoreEncoding();
