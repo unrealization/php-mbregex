@@ -196,7 +196,8 @@ class MbRegExTest extends TestCase
 		$this->assertIsString($output);
 		$this->assertSame('Test', 'Test');
 
-		//$this->markTestIncomplete();
+		$output = @MbRegEx::replace('(', '', 'Test');
+		$this->assertNull($output);
 	}
 
 	public function testSearch()
